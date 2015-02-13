@@ -1,6 +1,6 @@
 [submodule "zedboard/fpga-images-zedboard"]
 	path = zedboard/fpga-images-zedboard
-	url = https://github.com/ucb-bar/fpga-images-zedboard.git
+	url = https://github.com/wsong83/fpga-images-zedboard.git
 [submodule "common/u-boot-xlnx"]
 	path = common/u-boot-xlnx
 	url = https://github.com/Xilinx/u-boot-xlnx.git
