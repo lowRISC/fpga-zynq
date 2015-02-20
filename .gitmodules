@@ -1,6 +1,3 @@
-[submodule "zedboard/fpga-images-zedboard"]
-	path = zedboard/fpga-images-zedboard
-	url = https://github.com/wsong83/fpga-images-zedboard.git
 [submodule "common/u-boot-xlnx"]
 	path = common/u-boot-xlnx
 	url = https://github.com/Xilinx/u-boot-xlnx.git
@@ -9,3 +6,6 @@
 	path = common/linux-xlnx
 	url = https://github.com/Xilinx/linux-xlnx.git
 	branch = master-next
+[submodule "zedboard/fpga-images-zedboard"]
+	path = zedboard/fpga-images-zedboard
+	url = https://github.com/wsong83/fpga-images-zedboard.git
