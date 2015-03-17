@@ -58,7 +58,7 @@ bitstream: $(bitstream)
 hwspec = $(BOARD)_rocketchip/$(BOARD)_rocketchip.sdk/rocketchip_wrapper.hdf
 $(hwspec): $(bitstream)
 	-mkdir $(BOARD)_rocketchip/$(BOARD)_rocketchip.sdk
-	vivado -mode tcl -source src/tcl/export_hardware.tc
+	vivado -mode tcl -source src/tcl/export_hardware.tcl
 
 fsbl = $(BOARD)_rocketchip/$(BOARD)_rocketchip.sdk/FSBL/Debug/FSBL.elf
 $(fsbl): $(hwspec)

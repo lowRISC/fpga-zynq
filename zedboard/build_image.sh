@@ -37,11 +37,11 @@ fi
 echo "Checking for cross-compiling tools..."
 
 # check for riscv-tools
-riscv_elf_gcc=`which riscv64-unknow-elf-gcc`
+riscv_elf_gcc=`which riscv64-unknown-elf-gcc`
 if [ "$riscv_elf_gcc" == "" ]; then
     echo "Compiling the riscv64-unknwon-elf toolchain..."
     cd $TOP
-    git submodule update --init riacv-tools
+    git submodule update --init riscv-tools
     cd riscv-tools
     git submodule update --init --recursive
     ./build.sh
@@ -68,7 +68,7 @@ fi
 echo "Build the boot.bin..."
 
 cd $TOP
-git submodule update --init fpga_zynq
+git submodule update --init rocket uncore chisel hardfloat
 cd $TOP/fpga-zynq/zedboard
 git submodule update --init --recursive
 
@@ -177,6 +177,8 @@ $TOP/riscv-tools/make_root.sh
 cp root.bin $TOP/fpga-zynq/zedboard/fpga-images-zedboard/riscv/root.bin
 
 #### Finished
+echo ""
+echo "--------------------------------------------------------------------------------"
 echo "The following files have been build in fpga-images-zedboard:"
 echo "  boot.bin boot_image/system.bit boot_image/u-boot.elf boot_image/zynq_fsbl.elf"
 echo "  devicetree riscv/vmlinux riscv/root.bin uImage uramdisk.image.gz"
