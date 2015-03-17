@@ -55,7 +55,15 @@ $(bitstream): src/tcl/make_bitstream.tcl $(verilog_srcs) src/constrs/base.xdc | 
 	vivado -mode tcl -source src/tcl/make_bitstream.tcl
 bitstream: $(bitstream)
 
+hwspec = $(BOARD)_rocketchip/$(BOARD)_rocketchip.sdk/rocketchip_wrapper.hdf
+$(hwspec): $(bitstream)
+	-mkdir $(BOARD)_rocketchip/$(BOARD)_rocketchip.sdk
+	vivado -mode tcl -source src/tcl/export_hardware.tc
 
+fsbl = $(BOARD)_rocketchip/$(BOARD)_rocketchip.sdk/FSBL/Debug/FSBL.elf
+$(fsbl): $(hwspec)
+	xsdk -batch -source src/tcl/build_fsbl.tcl
+fsbl: $(fsbl)
 
 # Platform software generation
 # ------------------------------------------------------------------------------
