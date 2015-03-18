@@ -23,7 +23,7 @@ default: project
 # Specialize sources for board
 # ------------------------------------------------------------------------------
 src/verilog/rocketchip_wrapper.v: $(common)/rocketchip_wrapper.v
-	cp $(common)/rocketchip_wrapper.v src/verilog/
+	cp -a $(common)/rocketchip_wrapper.v src/verilog/
 
 src/tcl/$(BOARD)_rocketchip.tcl: $(common)/zynq_rocketchip.tcl Makefile
 	sed 's/BOARD_NAME_HERE/$(BOARD)/g;s/PART_NUMBER_HERE/$(PART)/g;$(insert_board);s/CHISEL_CONFIG_HERE/$(CONFIG)/g' \
@@ -36,7 +36,7 @@ src/tcl/make_bitstream.tcl: $(common)/make_bitstream.tcl
 rocket:
 	cd $(base_dir)/rocket-chip/fsim; \
 	make verilog CONFIG=$(CONFIG); \
-	cp generated-src/Top.$(CONFIG).v $(base_dir)/$(BOARD)/src/verilog
+	cp -a generated-src/Top.$(CONFIG).v $(base_dir)/$(BOARD)/src/verilog
 
 
 

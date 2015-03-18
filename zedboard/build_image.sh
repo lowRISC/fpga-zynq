@@ -34,6 +34,15 @@ if [[ "$vivado_version" != *v2014.4* ]]; then
     echo "Warning: You are using a Xilinx Vivado other than 2014.4. There may be problem in generating FPGA bitstreams."
 fi
 
+# prepare log files
+echo "git submodule log file" > $TOP/fpga-zynq/zedboard/build_image_submodule.log
+echo "riscv64-unknown-elf toolchain log file" > $TOP/fpga-zynq/zedboard/build_image_riscv64_unknown_elf.log
+echo "riscv-linux toolchain log file" > $TOP/fpga-zynq/zedboard/build_image_riscv_linux.log
+echo "Xilinx FPGA log file" > $TOP/fpga-zynq/zedboard/build_image_xilinx.log
+echo "RISC-V Linux log file" > $TOP/fpga-zynq/zedboard/build_image_riscv_linux.log
+echo "ARM Linux log file" > $TOP/fpga-zynq/zedboard/build_image_arm.log
+
+
 echo "Checking for cross-compiling tools..."
 
 # check for riscv-tools
@@ -41,10 +50,10 @@ riscv_elf_gcc=`which riscv64-unknown-elf-gcc`
 if [ "$riscv_elf_gcc" == "" ]; then
     echo "Compiling the riscv64-unknwon-elf toolchain..."
     cd $TOP
-    git submodule update --init riscv-tools
+    git submodule update --init riscv-tools  >> $TOP/fpga-zynq/zedboard/build_image_submodule.log
     cd riscv-tools
-    git submodule update --init --recursive
-    ./build.sh
+    git submodule update --init --recursive >> $TOP/fpga-zynq/zedboard/build_image_submodule.log
+    ./build.sh >> $TOP/fpga-zynq/zedboard/build_image_riscv64_unknown_elf.log
     echo "The riscv64-unknwon-elf toolchain compiled."
 fi
 
@@ -52,14 +61,14 @@ riscv_linux_gcc=`which riscv-linux-gcc`
 if [ "$riscv_elf_gcc" == "" ]; then
     echo "Compiling the riscv-linux toolchain..."
     cd $TOP
-    git submodule update --init riacv-tools
+    git submodule update --init riacv-tools >> $TOP/fpga-zynq/zedboard/build_image_submodule.log
     cd riscv-tools
-    git clone https://github.com/lowrisc/riscv-gcc.git
+    git clone https://github.com/lowrisc/riscv-gcc.git >> $TOP/fpga-zynq/zedboard/build_image_submodule.log
     cd riscv-gcc
     mkdir build
     cd build
-    ../configure --prefix=$RISCV
-    make -j linux
+    ../configure --prefix=$RISCV >> $TOP/fpga-zynq/zedboard/build_image_riscv_linux.log
+    make -j linux >> $TOP/fpga-zynq/zedboard/build_image_riscv_linux.log
     echo "The riscv-linux toolchain compiled."
 fi
 
@@ -68,34 +77,34 @@ fi
 echo "Build the boot.bin..."
 
 cd $TOP
-git submodule update --init rocket uncore chisel hardfloat
+git submodule update --init rocket uncore chisel hardfloat >> $TOP/fpga-zynq/zedboard/build_image_submodule.log
 cd $TOP/fpga-zynq/zedboard
-git submodule update --init --recursive
+git submodule update --init --recursive >> $TOP/fpga-zynq/zedboard/build_image_submodule.log
 
 echo "Step 1: Build the FPGA bitstream..."
 
-make rocket
-make bitstream
+make rocket >> $TOP/fpga-zynq/zedboard/build_image_xilinx.log
+make bitstream >> $TOP/fpga-zynq/zedboard/build_image_xilinx.log
 
 #### Build the FSBL
 
 echo "Step 2: Build the FSBL..."
 
-make fsbl
+make fsbl >> $TOP/fpga-zynq/zedboard/build_image_xilinx.log
 
 #### Build the ARM u-boot
 
 echo "Step 3: Build the ARM u-boot..."
 
-make arm-uboot
-cp soft_build/u-boot.elf fpga-images-zedboar/boot_image/
+make arm-uboot >> $TOP/fpga-zynq/zedboard/build_image_xilinx.log
+cp soft_build/u-boot.elf fpga-images-zedboard/boot_image/
 
 #### Build the boot.bin
 
 echo "Finally: Generate the boot.bin..."
 
-rm fpga-images-zedboar/boot.bin
-make fpga-images-zedboar/boot.bin
+rm fpga-images-zedboard/boot.bin
+make fpga-images-zedboard/boot.bin
 
 #### Build the fesvr-zynq
 
@@ -106,8 +115,8 @@ if [ ! -d build_fpga ]; then
     mkdir build_fpga
 fi
 cd build_fpga
-../configure --host=arm-xilinx-linux-gnueabi
-make -j
+../configure --host=arm-xilinx-linux-gnueabi >> $TOP/fpga-zynq/zedboard/build_image_xilinx.log
+make -j >> $TOP/fpga-zynq/zedboard/build_image_xilinx.log
 
 #### Build proxy kernel (pk)
 
@@ -118,8 +127,8 @@ if [ ! -d build ]; then
     mkdir build
 fi
 cd build
-../configure --prefix=$RISCV/riscv64-unknown-elf --host=riscv64-unknown-elf
-make -j
+../configure --prefix=$RISCV/riscv64-unknown-elf --host=riscv64-unknown-elf >> $TOP/fpga-zynq/zedboard/build_image_xilinx.log
+make -j >> $TOP/fpga-zynq/zedboard/build_image_xilinx.log
 
 #### prepare the ARM ramdisk
 
@@ -137,11 +146,11 @@ sudo \rm -fr ramdisk
 #### Build the ARM Linux kernel
 
 echo "Build the ARM Linux kernel..."
-make arm-linux
+make arm-linux >> $TOP/fpga-zynq/zedboard/build_image_arm.log
 cp deliver_output/uImage fpga-images-zedboard/uImage
 
 echo "Generate Zynq ARM device map..."
-make arm-dtb
+make arm-dtb >> $TOP/fpga-zynq/zedboard/build_image_arm.log
 cp deliver_output/devicetree.dtb fpga-images-zedboard/devicetree.dtb
 
 #### Build the RISC-V Linux Kernel
@@ -151,14 +160,14 @@ cd $TOP/riscv-tools
 if [ ! -d linux-3.14.13 ]; then
     curl https://www.kernel.org/pub/linux/kernel/v3.x/linux-3.14.13.tar.xz | tar -xJ
     cd linux-3.14.13
-    git init
-    git remote add origin https://github.com/riscv/riscv-linux.git
-    git fetch
+    git init >> $TOP/fpga-zynq/zedboard/build_image_submodule.log
+    git remote add origin https://github.com/riscv/riscv-linux.git >> $TOP/fpga-zynq/zedboard/build_image_submodule.log
+    git fetch >> $TOP/fpga-zynq/zedboard/build_image_submodule.log
     # currently we use an old version of riscv-linux
-    git checkout -f 989153f
+    git checkout -f 989153f >> $TOP/fpga-zynq/zedboard/build_image_submodule.log
 fi
-make ARCH=riscv defconfig
-make ARCH=riscv -j vmlinux
+make ARCH=riscv defconfig >> $TOP/fpga-zynq/zedboard/build_image_riscv_linux.log
+make ARCH=riscv -j vmlinux >> $TOP/fpga-zynq/zedboard/build_image_riscv_linux.log
 cp vmlinux $TOP/fpga-zynq/zedboard/fpga-images-zedboard/riscv/vmlinux
 
 #### Build the Busybox init
@@ -171,7 +180,7 @@ if [ ! -d busybox-1.21.1 ]; then
 fi
 cd busybox-1.21.1
 cp $TOP/riscv-tools/busybox_config .config
-make -j
+make -j >> $TOP/fpga-zynq/zedboard/build_image_riscv_linux.log
 
 $TOP/riscv-tools/make_root.sh
 cp root.bin $TOP/fpga-zynq/zedboard/fpga-images-zedboard/riscv/root.bin
