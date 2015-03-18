@@ -125,9 +125,10 @@ echo "Build proxy kernel (pk)..."
 cd $TOP/riscv-tools/riscv-pk
 if [ ! -d build ]; then
     mkdir build
+    cd build
+    ../configure --prefix=$RISCV/riscv64-unknown-elf --host=riscv64-unknown-elf >> $TOP/fpga-zynq/zedboard/build_image_xilinx.log
 fi
-cd build
-../configure --prefix=$RISCV/riscv64-unknown-elf --host=riscv64-unknown-elf >> $TOP/fpga-zynq/zedboard/build_image_xilinx.log
+cd $TOP/riscv-tools/riscv-pk/build
 make -j >> $TOP/fpga-zynq/zedboard/build_image_xilinx.log
 
 #### prepare the ARM ramdisk
@@ -166,6 +167,7 @@ if [ ! -d linux-3.14.13 ]; then
     # currently we use an old version of riscv-linux
     git checkout -f 989153f >> $TOP/fpga-zynq/zedboard/build_image_submodule.log
 fi
+cd $TOP/riscv-tools/linux-3.14.13
 make ARCH=riscv defconfig >> $TOP/fpga-zynq/zedboard/build_image_riscv_linux.log
 make ARCH=riscv -j vmlinux >> $TOP/fpga-zynq/zedboard/build_image_riscv_linux.log
 cp vmlinux $TOP/fpga-zynq/zedboard/fpga-images-zedboard/riscv/vmlinux
@@ -179,7 +181,9 @@ if [ ! -d busybox-1.21.1 ]; then
     curl -L http://busybox.net/downloads/busybox-1.21.1.tar.bz2 | tar -xj
 fi
 cd busybox-1.21.1
-cp $TOP/riscv-tools/busybox_config .config
+if [ ! -d .config ]; then
+    cp $TOP/riscv-tools/busybox_config .config
+fi
 make -j >> $TOP/fpga-zynq/zedboard/build_image_riscv_linux.log
 
 $TOP/riscv-tools/make_root.sh
