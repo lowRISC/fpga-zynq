@@ -10,14 +10,16 @@ orig_path=$PWD
 
 echo "Checking for environment variables..."
 
-# Check $RISCV is set
-if [ "$RISCV" == "" ]; then
-    echo "Error: Please set up the RISCV environment variables and run again."
+# check $TOP
+if [ "$TOP" == "" ]; then
+    echo "Error: Please set variable \$TOP to the lowrisc-chip directory and run again."
     exit 1
 fi
 
-if [ "$TOP" == "" ]; then
-    echo "Error: Please set variable $$TOP to the lowrisc-chip directory and run again."
+# Check $RISCV is set
+if [ "$RISCV" == "" ]; then
+    echo "Error: Please set up the RISCV environment variables and run again."
+    echo "An example riscv environment setup script is provided as \$TOP/set_riscv_env.sh"
     exit 1
 fi
 
@@ -25,6 +27,7 @@ fi
 vivado_path=`which vivado`
 if [ "$vivado_path" == "" ]; then
     echo "Error: Please set up the Xilinx environment variables and run again."
+    echo "(For 64-bit Ubuntu) Normally you can do this by sourcing /Xilinx/Install/Dir/Vivado/2014.4/settings64.sh"
     exit 1
 fi
     
@@ -187,6 +190,22 @@ fi
 make -j >> $TOP/fpga-zynq/zedboard/build_image_riscv_linux.log
 
 $TOP/riscv-tools/make_root.sh
+#cp root.bin $TOP/fpga-zynq/zedboard/fpga-images-zedboard/riscv/root.bin
+
+#### Build the Tag Linux tests can copy them to the root.bin
+cd $TOP/riscv-tools
+git submodule update --init lowrisc-tag-tests >> $TOP/fpga-zynq/zedboard/build_image_submodule.log
+cd lowrisc-tag-tests/tests
+make linux  >> $TOP/fpga-zynq/zedboard/build_image_riscv_linux.log
+cd $TOP/riscv-tools/hello
+make >> $TOP/fpga-zynq/zedboard/build_image_riscv_linux.log
+cd $TOP/riscv-tools/busybox-1.21.1
+sudo mount -o loop root.bin mnt
+sudo mkdir mnt/test
+sudo cp ../lowrisc-tag-tests/tests/tag_ld_st.linux mnt/test/
+sudo cp ../lowrisc-tag-tests/tests/parity.linux mnt/test/
+sudo cp ../hello/hello.linux mnt/test/
+sudo umount mnt
 cp root.bin $TOP/fpga-zynq/zedboard/fpga-images-zedboard/riscv/root.bin
 
 #### Finished
