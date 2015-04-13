@@ -61,15 +61,18 @@ if [ "$riscv_elf_gcc" == "" ]; then
 fi
 
 riscv_linux_gcc=`which riscv-linux-gcc`
-if [ "$riscv_elf_gcc" == "" ]; then
+if [ "$riscv_linux_gcc" == "" ]; then
     echo "Compiling the riscv-linux toolchain..."
     cd $TOP
-    git submodule update --init riacv-tools >> $TOP/fpga-zynq/zedboard/build_image_submodule.log
+    git submodule update --init riscv-tools >> $TOP/fpga-zynq/zedboard/build_image_submodule.log
     cd riscv-tools
-    git clone https://github.com/lowrisc/riscv-gcc.git >> $TOP/fpga-zynq/zedboard/build_image_submodule.log
+    if [ ! -e riscv-gcc ]; then
+        git clone https://github.com/lowrisc/riscv-gcc.git >> $TOP/fpga-zynq/zedboard/build_image_submodule.log
+    fi
     cd riscv-gcc
-    mkdir build
+    if [ ! -e build ]; then mkdir build; fi
     cd build
+    make clean
     ../configure --prefix=$RISCV >> $TOP/fpga-zynq/zedboard/build_image_riscv_linux.log
     make -j linux >> $TOP/fpga-zynq/zedboard/build_image_riscv_linux.log
     echo "The riscv-linux toolchain compiled."
